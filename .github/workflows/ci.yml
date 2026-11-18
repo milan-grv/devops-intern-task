@@ -9,8 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    #needs: test ??
     steps:
+      - name: Actions/checkout
       - uses: actions/checkout@v3
 
       - name: Set up JDK
@@ -18,9 +18,27 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-        #with:
-          #maven-version: '3.8'
-          #distribution: ''
 
       - name: Build with Maven
         run: mvn clean package
+
+      - name: Dependency Checks
+        uses: actions/dependency-review-action@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Actions/Checkout
+        uses: actions/checkout@v3
+      
+      - name: Deploy
+        run: |
+          cf api ${{ secrets.CF_URL }}
+          cf auth ${{ secrets.CF_USER }} ${{ secrets.CF_PASSWORD }} --origin ansprovider-platform
+          cf target -o ${{ secrets.CF_ORG }} -s ${{ secrets.CF_SPACE }}
+          cf push
+
+
