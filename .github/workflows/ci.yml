@@ -18,7 +18,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-        with:
+        #with:
           #maven-version: '3.8'
           #distribution: ''
 
